@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Enforcement Portal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+
+  <div class="sidebar">
+    <h1>TRAFFIC ENFORCEMENT<span>Police Review Portal</span></h1>
+    <a class="nav-item active" data-view="dashboard-view">Dashboard</a>
+    <a class="nav-item" data-view="analytics-view">Analytics</a>
+    <a class="nav-item" data-view="blacklist-view">Blacklist</a>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="view active">
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Cases</div><div class="value" id="stat-total">0</div></div>
+        <div class="stat-card pending"><div class="label">Pending</div><div class="value" id="stat-pending">0</div></div>
+        <div class="stat-card approved"><div class="label">Approved</div><div class="value" id="stat-approved">0</div></div>
+        <div class="stat-card rejected"><div class="label">Rejected</div><div class="value" id="stat-rejected">0</div></div>
+      </div>
+
+      <div class="filters">
+        <select id="filter-status">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <select id="filter-type">
+          <option value="">All Violation Types</option>
+          <option value="NO_HELMET">No Helmet</option>
+          <option value="RED_LIGHT">Red Light</option>
+          <option value="WRONG_WAY">Wrong Way</option>
+          <option value="TRIPLE_RIDING">Triple Riding</option>
+          <option value="OVERSPEEDING">Overspeeding</option>
+        </select>
+        <button class="primary" id="refresh-btn">Refresh</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Case ID</th><th>Plate</th><th>Violation</th><th>Time</th><th>Location</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="violations-table-body"></tbody>
+      </table>
+      <div id="empty-dashboard" class="empty-state" style="display:none;">No violations match the current filters.</div>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div id="analytics-view" class="view">
+      <div class="analytics-grid">
+        <div class="panel">
+          <h3>Violations by Type</h3>
+          <div id="chart-by-type"></div>
+        </div>
+        <div class="panel">
+          <h3>Violations by Location</h3>
+          <div id="chart-by-location"></div>
+        </div>
+        <div class="panel" style="grid-column: 1 / -1;">
+          <h3>Rejection Reasons (feedback loop for model retraining)</h3>
+          <div id="chart-rejection-reasons"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLACKLIST VIEW -->
+    <div id="blacklist-view" class="view">
+      <div class="filters">
+        <input id="bl-plate" placeholder="Plate number" style="background:var(--panel-light);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;">
+        <input id="bl-reason" placeholder="Reason" style="background:var(--panel-light);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;">
+        <button class="primary" id="bl-add-btn">Add to Blacklist</button>
+      </div>
+      <table>
+        <thead><tr><th>Plate Number</th><th>Reason</th></tr></thead>
+        <tbody id="blacklist-table-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Case detail modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <span class="modal-close" id="modal-close">&times;</span>
+    <h2 id="modal-case-id">Case</h2>
+    <img id="modal-image" src="" alt="Evidence">
+    <div class="field"><span>Plate Number</span><span id="modal-plate"></span></div>
+    <div class="field"><span>Violation</span><span id="modal-violation"></span></div>
+    <div class="field"><span>Time</span><span id="modal-time"></span></div>
+    <div class="field"><span>Location</span><span id="modal-location"></span></div>
+    <div class="field"><span>AI Confidence</span><span id="modal-confidence"></span></div>
+    <div class="field"><span>Status</span><span id="modal-status"></span></div>
+    <div class="field"><span>Evidence Hash (SHA-256)</span></div>
+    <div class="hash" id="modal-hash"></div>
+
+    <div id="modal-review-controls">
+      <div class="filters" style="margin-top:14px;">
+        <select id="modal-reject-reason">
+          <option value="">-- rejection reason (if rejecting) --</option>
+          <option value="False detection">False detection</option>
+          <option value="Wrong plate read">Wrong plate read</option>
+          <option value="Bad lighting / low confidence">Bad lighting / low confidence</option>
+          <option value="Duplicate case">Duplicate case</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="approve" id="modal-approve-btn">Approve</button>
+        <button class="reject" id="modal-reject-btn">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Core AI / CV
+ultralytics>=8.4.0        # YOLOv8 + built-in ByteTrack/BoT-SORT support
+lap>=0.5.12                # required by ByteTrack/BoT-SORT association (ultralytics auto-installs if missing, but pin it)
+opencv-python>=4.9.0
+numpy>=1.26.0
+
+# OCR — PaddleOCR 3.x (breaking API change from 2.x: use_angle_cls -> use_textline_orientation,
+# ocr.ocr() -> ocr.predict(), result fields are res["rec_texts"] / res["rec_scores"])
+paddleocr>=3.0.0,<4.0.0
+paddlepaddle>=3.0.0        # CPU build; swap for paddlepaddle-gpu if you have CUDA
+
+# Backend
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+sqlalchemy>=2.0.0
+pydantic>=2.6.0
+requests>=2.31.0
+
+# Config
+pyyaml>=6.0.1
+
+# Export (for later ONNX/edge optimization phase)
+onnx>=1.15.0
+onnxruntime>=1.17.0

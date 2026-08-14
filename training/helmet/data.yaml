@@ -1,0 +1,14 @@
+# Helmet detection dataset config
+# Place images/labels under datasets/helmet/{train,val,test}
+# Label format: YOLO txt (class x_center y_center width height, normalized 0-1)
+
+path: ../../datasets/helmet
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: motorcycle
+  1: rider
+  2: helmet
+  3: no_helmet

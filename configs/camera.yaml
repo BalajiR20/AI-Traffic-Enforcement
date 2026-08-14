@@ -1,0 +1,32 @@
+# Camera calibration config.
+# These values are placeholders — set them to real pixel coordinates for
+# your actual video/camera. Easiest way: open one frame in an image viewer
+# (or the analytics/calibration tool in Phase E) and read off pixel positions.
+
+camera_id: "CAM_01"
+location: "Junction A, Chennai"
+
+# Frame resolution you're calibrating against (must match your video/webcam)
+frame_width: 1280
+frame_height: 720
+
+# Traffic light ROI: [x1, y1, x2, y2] — a tight box around the light head
+traffic_light_roi: [980, 40, 1020, 140]
+
+# Virtual stop line for red-light detection: a horizontal line
+# defined by its y-coordinate, plus the x-range it spans
+stop_line:
+  y: 480
+  x_start: 200
+  x_end: 1100
+
+# Allowed direction of travel, in degrees (image coordinates: 0=right, 90=down,
+# 180=left, 270=up). Vehicles moving opposite to this are flagged wrong-way.
+allowed_direction_deg: 0
+wrong_way_angle_tolerance_deg: 60
+
+# Speed estimation reference lines (Phase E, optional)
+speed_line_1_y: 300
+speed_line_2_y: 500
+speed_reference_distance_m: 10.0
+speed_limit_kmh: 40

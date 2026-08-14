@@ -1,0 +1,10 @@
+# General rule-engine thresholds. Tune these after watching your first
+# few pipeline runs on real footage.
+
+confirm_frames: 5          # consecutive frames a violation must persist before it's confirmed
+max_riders_allowed: 2      # more than this on one motorcycle = triple riding
+
+detection_conf_threshold: 0.35
+helmet_conf_threshold: 0.40
+plate_conf_threshold: 0.40
+ocr_min_confidence: 0.50   # below this, plate_number is stored as "UNREADABLE"

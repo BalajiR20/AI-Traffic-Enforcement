@@ -1,0 +1,10 @@
+# Indian license plate detection dataset config
+# Place images/labels under datasets/license_plate/{train,val,test}
+
+path: ../../datasets/license_plate
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: license_plate

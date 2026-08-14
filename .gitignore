@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Datasets (too large for git — document download steps instead)
+datasets/**/images/*
+datasets/**/labels/*
+datasets/my_test_videos/*.mp4
+!datasets/**/.gitkeep
+
+# Trained weights (large binary files)
+models/pretrained/*.pt
+models/helmet/*.pt
+models/helmet/run/
+models/license_plate/*.pt
+models/license_plate/run/
+!models/**/.gitkeep
+
+# Evidence output (generated at runtime, not source)
+evidence/images/*.jpg
+evidence/images/*.json
+evidence/videos/*.mp4
+!evidence/**/.gitkeep
+
+# Database
+*.db
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
