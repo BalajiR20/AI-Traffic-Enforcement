@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Traffic Violation Detection & Enforcement System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Chart Container Styles as per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+<!-- Chosen Palette: Tech Slate, Deep Indigo (#1E293B, #4F46E5), Amber (#D97706), Crimson (#DC2626), Emerald (#10B981) -->
+
+<!-- Application Structure Plan:
+     1. Executive Summary & Interactive KPIs: High-level overview of objectives, technology, and architectural highlights.
+     2. Interactive Workflow & Architecture Pipeline: Clickable step-by-step breakdown of the 9 processing stages (Camera to Human Decision), showing event-driven logic and data payloads.
+     3. Violation Detection Engines & Temporal Validation: Interactive tabs exploring No Helmet, Red Light Jumping, Wrong-Way Driving, and Triple Riding, featuring a live simulation of frame-by-frame temporal validation logic to demonstrate noise reduction.
+     4. Computational Efficiency Analysis & Resource Load Simulator: Interactive Chart.js visualizer comparing continuous inference vs. event-driven triggering, with interactive traffic density slider.
+     5. Live Enforcement Review Simulator (Human-in-the-Loop): Interactive mockup of the reviewer portal where users can inspect sample cases, test SHA-256 hash verification, check blacklists, and record approval/rejection decisions.
+     6. Comparative Analysis, Scope & Future Roadmap: Structured side-by-side comparison with traditional enforcement, limitations, and future enhancements.
+-->
+
+<!-- Visualization & Content Choices:
+     - Architecture Diagram -> Interactive CSS Step Nodes -> Clickable modal/card details -> Provides clear operational understanding without SVG/Mermaid.
+     - Temporal Validation -> Interactive Frame Counter & Toggle -> Shows how false positives are filtered over consecutive frames -> Demonstrates robustness.
+     - GPU/CPU Computational Burden -> Chart.js Bar & Line Chart -> Dynamic updates on slider movement -> Proves efficiency of event-driven ANPR.
+     - Case Review Workflow -> Interactive Review Dashboard Simulator -> Live case selection, simulated video clip playback, SHA-256 tamper check -> Demonstrates Human-in-the-Loop design.
+     - NO SVG graphics or Mermaid JS used; relied on styled HTML, Tailwind grid, and Chart.js Canvas.
+-->
+
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!-- Navigation Header -->
+<header class="sticky top-0 z-50 bg-slate-900 text-white shadow-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0">
+        <div class="flex items-center space-x-3 mb-2 md:mb-0">
+            <span class="text-2xl">🚦</span>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide text-white leading-tight">AI Traffic Enforcement System</h1>
+                <p class="text-xs text-indigo-400 font-medium">Human-in-the-Loop Intelligent Detection Platform</p>
+            </div>
+        </div>
+        <nav class="flex flex-wrap justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-slate-300">
+            <button onclick="scrollToSection('overview')" class="px-3 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition">Overview</button>
+            <button onclick="scrollToSection('architecture')" class="px-3 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition">Architecture</button>
+            <button onclick="scrollToSection('engine')" class="px-3 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition">Violation Engines</button>
+            <button onclick="scrollToSection('efficiency')" class="px-3 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition">Efficiency</button>
+            <button onclick="scrollToSection('portal')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm">Review Portal Demo</button>
+            <button onclick="scrollToSection('techspecs')" class="px-3 py-1.5 rounded-lg hover:bg-slate-800 hover:text-white transition">Specs & Scope</button>
+        </nav>
+    </div>
+</header>
+
+<!-- Main Container -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+    <!-- HERO / OVERVIEW SECTION -->
+    <section id="overview" class="space-y-6">
+        <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-3xl space-y-4">
+                <div class="inline-flex items-center space-x-2 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+                    <span>💡 Automated Vision & Key Evidence Intelligence</span>
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+                    AI-Powered Intelligent Traffic Violation Detection & Enforcement System
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    A scalable computer vision solution designed to automate the detection of urban road safety violations. Utilizing <strong>YOLOv8n</strong>, <strong>ByteTrack</strong>, and <strong>PaddleOCR</strong>, the system combines geometric rule analysis with temporal validation and event-driven ANPR—maintaining accountable human oversight for all legal enforcement decisions.
+                </p>
+                <div class="pt-2 flex flex-wrap gap-3">
+                    <button onclick="scrollToSection('portal')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-lg text-sm shadow-lg transition flex items-center space-x-2">
+                        <span>🛡️ Try Review Dashboard Demo</span>
+                    </button>
+                    <button onclick="scrollToSection('architecture')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold px-5 py-2.5 rounded-lg text-sm transition">
+                        <span>⚙️ Explore Architecture</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Decorative Accent Elements -->
+            <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        </div>
+
+        <!-- Section Introduction Paragraph -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-slate-600 text-sm leading-relaxed">
+            <p>
+                <strong>System Purpose:</strong> Rapid urban expansion requires automated traffic monitoring to augment manual traffic police duties. This interactive system highlights how multi-object tracking, specialized neural networks, and event-driven execution eliminate continuous heavy computations while reducing false positives through multi-frame temporal validation.
+            </p>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                    <span>Target Violations</span>
+                    <span class="text-xl">🚨</span>
+                </div>
+                <div class="text-2xl font-bold text-slate-900 mt-2">4 Core Types</div>
+                <div class="text-xs text-slate-500 mt-1">Helmet, Signal, Direction, Riding</div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                    <span>Validation Strategy</span>
+                    <span class="text-xl">⏱️</span>
+                </div>
+                <div class="text-2xl font-bold text-indigo-600 mt-2">Temporal</div>
+                <div class="text-xs text-slate-500 mt-1">Multi-frame persistence verification</div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                    <span>ANPR Execution</span>
+                    <span class="text-xl">⚡</span>
+                </div>
+                <div class="text-2xl font-bold text-emerald-600 mt-2">Event-Driven</div>
+                <div class="text-xs text-slate-500 mt-1">Plate detection only on confirmed events</div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                    <span>Enforcement Model</span>
+                    <span class="text-xl">👨‍💻</span>
+                </div>
+                <div class="text-2xl font-bold text-amber-600 mt-2">Human-in-Loop</div>
+                <div class="text-xs text-slate-500 mt-1">Final decision via web dashboard</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ARCHITECTURE & PIPELINE SECTION -->
+    <section id="architecture" class="space-y-6">
+        <div class="border-b border-slate-200 pb-3">
+            <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                <span>⚙️</span>
+                <span>System Architecture & Event-Driven Pipeline</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+                Explore the step-by-step pipeline from video acquisition to manual enforcement review. Click any stage to inspect details.
+            </p>
+        </div>
+
+        <!-- Section Introduction Paragraph -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-slate-600 text-sm leading-relaxed">
+            <p>
+                <strong>Architecture Context:</strong> Unlike traditional systems that constantly run resource-heavy OCR models on every frame, this project uses a modular pipeline. Continuous lightweight object detection and multi-object tracking identify candidate vehicles, which undergo temporal validation before triggering OCR, evidence package creation, and database logging.
+            </p>
+        </div>
+
+        <!-- Interactive Architecture Step Selector -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2" id="pipeline-nodes">
+            <!-- Dynamic Buttons Populated via JS -->
+        </div>
+
+        <!-- Active Step Detailed Card -->
+        <div id="step-detail-card" class="bg-white p-6 rounded-xl border border-indigo-100 shadow-md transition-all">
+            <!-- Dynamic Content loaded via JS -->
+        </div>
+    </section>
+
+    <!-- VIOLATION ENGINES & TEMPORAL VALIDATION SECTION -->
+    <section id="engine" class="space-y-6">
+        <div class="border-b border-slate-200 pb-3">
+            <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                <span>🧠</span>
+                <span>Violation Detection Engines & Temporal Validation</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+                Combining specialized deep learning models with geometric rule engines and temporal persistence logic.
+            </p>
+        </div>
+
+        <!-- Section Introduction Paragraph -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-slate-600 text-sm leading-relaxed">
+            <p>
+                <strong>Detection Logic & Noise Mitigation:</strong> The system identifies four major traffic violations using two distinct approaches: specialized object detection models (for helmets and riders) and geometric spatial rules (for red-light jumping and wrong-way trajectories). To eliminate transient detection errors or occlusion noise, candidates must satisfy strict temporal persistence across consecutive frames.
+            </p>
+        </div>
+
+        <!-- Interactive Grid: Violation Types -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Card 1: No Helmet -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700">Deep Learning Model</span>
+                    <span class="text-xs font-mono text-slate-400">Model: YOLOv8n Fine-Tuned</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                    <span>🪖</span>
+                    <span>1. Riding Without a Helmet</span>
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Utilizes a YOLOv8n model fine-tuned on the <em>AI City Challenge Track-5 Helmet Dataset</em>. Detects two-wheeler riders and determines helmet presence. Associates unhelmeted head detections directly with the tracked vehicle ID.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-700">
+                    <strong>Validation Rule:</strong> Requires rider without helmet to be detected continuously across N consecutive frames before generating ANPR trigger.
+                </div>
+            </div>
+
+            <!-- Card 2: Red Light Jumping -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded bg-amber-100 text-amber-700">Geometric Rule Engine</span>
+                    <span class="text-xs font-mono text-slate-400">Model: YOLOv8n + Tracking</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                    <span>🚦</span>
+                    <span>2. Red Light Jumping</span>
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Analyzes vehicle trajectories relative to pre-configured stop-line boundaries and traffic signal states detected in real-time. Eliminates the need for specialized deep learning retraining for every unique camera angle.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-700">
+                    <strong>Validation Rule:</strong> Triggered when vehicle bounding-box centroid crosses the stop boundary while signal state is evaluated as RED.
+                </div>
+            </div>
+
+            <!-- Card 3: Wrong-Way Driving -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded bg-amber-100 text-amber-700">Geometric Rule Engine</span>
+                    <span class="text-xs font-mono text-slate-400">Model: ByteTrack Trajectory</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                    <span>⛔</span>
+                    <span>3. Wrong-Way Driving</span>
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Tracks vehicle displacement vectors across frames using ByteTrack identities. Compares observed motion direction against pre-defined directional vector boundaries assigned for the lane ROI.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-700">
+                    <strong>Validation Rule:</strong> Direction vector cosine similarity must remain negative relative to normal traffic flow for multiple tracking cycles.
+                </div>
+            </div>
+
+            <!-- Card 4: Triple Riding -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700">Object Association</span>
+                    <span class="text-xs font-mono text-slate-400">Model: YOLOv8n Core</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                    <span>🛵</span>
+                    <span>4. Triple Riding Detection</span>
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Evaluates spatial overlap and bounding-box co-location between detected person/rider objects and motorcycles. Flags cases where rider count associated with a single motorcycle ID exceeds two.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-700">
+                    <strong>Validation Rule:</strong> Person counts bound to motorcycle track ID must evaluate ≥ 3 across consecutive frames.
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Temporal Validation Simulator Widget -->
+        <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+                <div>
+                    <h4 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <span>🧪</span>
+                        <span>Interactive Temporal Validation Simulator</span>
+                    </h4>
+                    <p class="text-xs text-slate-400">Test how multi-frame validation prevents false triggers from single-frame optical noise.</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="simulateTemporalValidation(false)" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
+                        Simulate Detection Noise (Noisy Frame)
+                    </button>
+                    <button onclick="simulateTemporalValidation(true)" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-3 py-1.5 rounded-lg text-white font-medium">
+                        Simulate Sustained Violation (3 Frames)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Interactive Canvas/Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                    <div class="text-xs font-semibold text-slate-400 mb-1">Frame 1 Status</div>
+                    <div id="sim-frame-1" class="text-sm font-bold text-slate-500">Idle / No Event</div>
+                    <div class="text-[10px] text-slate-500 mt-2">Candidate Detection</div>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                    <div class="text-xs font-semibold text-slate-400 mb-1">Frame 2 Status</div>
+                    <div id="sim-frame-2" class="text-sm font-bold text-slate-500">Idle / Pending</div>
+                    <div class="text-[10px] text-slate-500 mt-2">Persistence Counter: 2</div>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                    <div class="text-xs font-semibold text-slate-400 mb-1">Frame 3 Confirmation</div>
+                    <div id="sim-frame-3" class="text-sm font-bold text-slate-500">Idle / Unconfirmed</div>
+                    <div class="text-[10px] text-slate-500 mt-2">Trigger ANPR & OCR</div>
+                </div>
+            </div>
+
+            <!-- Validation Result Banner -->
+            <div id="sim-banner" class="p-3 rounded-lg bg-slate-800 text-xs text-slate-300 border border-slate-700 flex items-center justify-between">
+                <span>Click a button above to run the frame validation sequence.</span>
+                <span class="font-mono text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-400">System State: Ready</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- EFFICIENCY & COMPUTATIONAL LOAD SIMULATOR SECTION -->
+    <section id="efficiency" class="space-y-6">
+        <div class="border-b border-slate-200 pb-3">
+            <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                <span>⚡</span>
+                <span>Event-Driven Efficiency Analysis</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+                Comparing resource overhead of continuous ANPR/OCR execution versus event-driven execution.
+            </p>
+        </div>
+
+        <!-- Section Introduction Paragraph -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-slate-600 text-sm leading-relaxed">
+            <p>
+                <strong>Efficiency Design:</strong> Deep learning OCR engines like PaddleOCR and plate localization networks consume high GPU compute cycles. By deferring ANPR until a violation candidate passes multi-frame temporal validation, the overall frame processing burden is reduced by up to 80% under standard traffic conditions, enabling edge deployment.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <!-- Controls & Explanation -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
+                <h4 class="text-base font-bold text-slate-900">Resource Savings Simulator</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Adjust traffic vehicle density below to see how event-driven architecture prevents GPU overload by invoking PaddleOCR only for verified offenders.
+                </p>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-semibold text-slate-700">
+                        <span>Simulated Vehicles per Minute:</span>
+                        <span id="traffic-density-label" class="text-indigo-600 font-bold">40 Vehicles</span>
+                    </div>
+                    <input type="range" id="traffic-slider" min="10" max="150" value="40" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" oninput="updateEfficiencyChart(this.value)">
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                        <span>Low (Light Traffic)</span>
+                        <span>Medium</span>
+                        <span>High (Peak Intersection)</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between text-xs">
+                        <span class="text-slate-600">Continuous OCR Inferences:</span>
+                        <span id="continuous-ops" class="font-bold font-mono text-red-600">2,400 ops/min</span>
+                    </div>
+                    <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100 flex items-center justify-between text-xs">
+                        <span class="text-indigo-900 font-medium">Event-Driven OCR Inferences:</span>
+                        <span id="event-ops" class="font-bold font-mono text-indigo-700">120 ops/min</span>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center justify-between text-xs">
+                        <span class="text-emerald-900 font-medium">Calculated Compute Reduction:</span>
+                        <span id="savings-pct" class="font-bold font-mono text-emerald-700">95.0% Saved</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Display Column -->
+            <div class="lg:col-span-7 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-xs font-bold text-slate-700 mb-2 text-center">Inference Operations per Minute (Continuous vs. Event-Driven)</div>
+                <div class="chart-container">
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LIVE HUMAN-IN-THE-LOOP ENFORCEMENT PORTAL SIMULATOR SECTION -->
+    <section id="portal" class="space-y-6">
+        <div class="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                    <span>🛡️</span>
+                    <span>Human-in-the-Loop Review Dashboard Simulator</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">
+                    Simulate how authorized enforcement personnel review AI-collected evidence before confirming legal challans.
+                </p>
+            </div>
+            <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full self-start sm:self-auto">Live Prototype UI</span>
+        </div>
+
+        <!-- Section Introduction Paragraph -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-slate-600 text-sm leading-relaxed">
+            <p>
+                <strong>Human Oversight Workflow:</strong> AI systems generate evidence candidates but do not issue legal notices autonomously. Reviewers inspect snapshot images, short video snippets, extracted ANPR plate strings, SHA-256 integrity hashes, and vehicle blacklist statuses before executing an official approval or entering a rejection rationale.
+            </p>
+        </div>
+
+        <!-- Simulated Dashboard Interface Shell -->
+        <div class="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden">
+
+            <!-- Top Dashboard Header Bar -->
+            <div class="bg-slate-800 px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span class="text-xs font-mono text-slate-300 ml-2">Enforcement Portal v1.0.4 | Backend: FastAPI + SQLite</span>
+                </div>
+                <div class="text-xs text-slate-400 font-mono flex items-center space-x-4">
+                    <span>Active Session: Inspector #402</span>
+                    <span class="bg-slate-700 px-2 py-0.5 rounded text-slate-200">Database: Online</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Content Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+
+                <!-- Left Column: Violation Case Queue -->
+                <div class="lg:col-span-4 border-r border-slate-800 p-4 space-y-3 bg-slate-900/50">
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Detected Cases Queue</span>
+                        <span id="case-count" class="text-xs bg-indigo-900/80 text-indigo-300 px-2 py-0.5 rounded font-mono">4 Pending</span>
+                    </div>
+
+                    <!-- Case Item Cards -->
+                    <div class="space-y-2 overflow-y-auto max-h-[460px] pr-1" id="case-queue-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Case Inspection & Evidence Review -->
+                <div class="lg:col-span-8 p-6 space-y-6 bg-slate-950 text-slate-200">
+
+                    <!-- Selected Case Details Header -->
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center bg-slate-900 p-4 rounded-xl border border-slate-800 gap-3">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span id="detail-case-id" class="text-lg font-bold text-white font-mono">Case #1015</span>
+                                <span id="detail-violation-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded bg-red-900/80 text-red-300 border border-red-700">Triple Riding</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1 flex items-center space-x-3">
+                                <span>Time: <strong id="detail-time" class="text-slate-300">09:27 AM</strong></span>
+                                <span>Location: <strong id="detail-location" class="text-slate-300">City Junction 3</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Blacklist Indicator -->
+                        <div id="detail-blacklist-card" class="bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 flex items-center space-x-2">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Media & Evidence Visualizer Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Evidence Snapshot Visual Box -->
+                        <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 space-y-2">
+                            <div class="flex justify-between items-center text-xs text-slate-400">
+                                <span>Frame Evidence Snapshot</span>
+                                <span class="text-[10px] text-indigo-400">YOLOv8 Bounding Boxes</span>
+                            </div>
+                            <div class="h-44 bg-slate-800 rounded-lg flex flex-col items-center justify-center border border-dashed border-slate-700 p-3 text-center relative overflow-hidden" id="snapshot-canvas-box">
+                                <!-- Dynamic Canvas/Visual populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- ANPR & Video Evidence Visual Box -->
+                        <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 space-y-2">
+                            <div class="flex justify-between items-center text-xs text-slate-400">
+                                <span>ANPR Plate Extraction</span>
+                                <span class="text-[10px] text-emerald-400">PaddleOCR Verified</span>
+                            </div>
+                            <div class="h-44 bg-slate-800 rounded-lg p-3 flex flex-col justify-between border border-slate-700">
+                                <div>
+                                    <div class="text-[10px] text-slate-400 uppercase">Recognized Plate Number:</div>
+                                    <div id="detail-plate-number" class="text-2xl font-black font-mono tracking-wider text-amber-400 mt-1 bg-slate-900 px-3 py-1.5 rounded border border-amber-500/30 text-center">
+                                        MH14GH3456
+                                    </div>
+                                </div>
+                                <div class="bg-slate-900 p-2 rounded text-[11px] space-y-1">
+                                    <div class="flex justify-between text-slate-400">
+                                        <span>Video Clip (5s):</span>
+                                        <span class="text-indigo-400 cursor-pointer hover:underline" onclick="playSimulatedVideo()">▶ Sim Playback</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-500 truncate" id="video-filename">clip_1015_rec.mp4</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tamper-Evident SHA-256 Checksum Inspector -->
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-semibold text-slate-300 flex items-center space-x-1">
+                                <span>🔒</span>
+                                <span>Tamper-Evident Evidence Package Hash (SHA-256)</span>
+                            </span>
+                            <button onclick="verifyHashIntegrity()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2 py-1 rounded transition">
+                                Verify Hash Integrity
+                            </button>
+                        </div>
+                        <div id="detail-hash" class="font-mono text-[11px] text-slate-400 bg-slate-950 p-2.5 rounded border border-slate-800 break-all">
+                            3f7c2a6e9b2d9e4c44e7f8ac6b9d3e8f7a9c1b2d4e6f7a8b1c2d3e4f5a6b7c8d9e0f1a2
+                        </div>
+                        <div id="hash-status-msg" class="text-[10px] text-slate-500 italic">SHA-256 matches stored backend payload signature.</div>
+                    </div>
+
+                    <!-- Inspector Action Controls -->
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <div class="text-xs font-semibold text-slate-300">Human Enforcement Decision:</div>
+
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button onclick="recordDecision('Approved')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition flex items-center justify-center space-x-2">
+                                <span>✅ Approve Violation (Generate Challan)</span>
+                            </button>
+                            <button onclick="recordDecision('Rejected')" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition flex items-center justify-center space-x-2">
+                                <span>❌ Reject Case</span>
+                            </button>
+                        </div>
+
+                        <!-- Optional Rejection Rationale Select -->
+                        <div class="flex items-center space-x-3 text-xs">
+                            <span class="text-slate-400 whitespace-nowrap">Rejection Reason (if applicable):</span>
+                            <select id="rejection-reason" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-2.5 py-1.5 w-full text-xs focus:outline-none focus:border-indigo-500">
+                                <option value="Occlusion / Partial Plate Blur">Occlusion / Partial Plate Blur</option>
+                                <option value="Unclear Helmet Distinction">Unclear Helmet Distinction</option>
+                                <option value="Emergency Vehicle Exemption">Emergency Vehicle Exemption</option>
+                                <option value="Duplicate Detection Event">Duplicate Detection Event</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECHNICAL SPECS, SCOPE & ROADMAP SECTION -->
+    <section id="techspecs" class="space-y-6">
+        <div class="border-b border-slate-200 pb-3">
+            <h3 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                <span>📊</span>
+                <span>System Specifications, Limitations & Future Scope</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+                Overview of technological stacks, dataset backings, prototype scope, and upcoming developments.
+            </p>
+        </div>
+
+        <!-- Section Introduction Paragraph -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-slate-600 text-sm leading-relaxed">
+            <p>
+                <strong>Evaluation & Technical Context:</strong> The prototype demonstrates complete integration from continuous OpenCV stream capture down to Fast API database logging. Below is a detailed breakdown of technologies used, specialized training datasets, current operational bounds, and strategic enhancements planned for edge deployment.
+            </p>
+        </div>
+
+        <!-- Specs Tabs Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Tech Stack Card -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center space-x-2">
+                    <span>💻</span>
+                    <span>Technology Stack</span>
+                </h4>
+                <ul class="text-xs space-y-2 text-slate-600">
+                    <li class="flex justify-between border-b border-slate-50 pb-1">
+                        <span class="text-slate-500">Detector:</span>
+                        <span class="font-semibold text-slate-800">YOLOv8n (Ultralytics)</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-50 pb-1">
+                        <span class="text-slate-500">Tracking:</span>
+                        <span class="font-semibold text-slate-800">ByteTrack</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-50 pb-1">
+                        <span class="text-slate-500">OCR Engine:</span>
+                        <span class="font-semibold text-slate-800">PaddleOCR</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-50 pb-1">
+                        <span class="text-slate-500">Backend API:</span>
+                        <span class="font-semibold text-slate-800">FastAPI (Python)</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-50 pb-1">
+                        <span class="text-slate-500">Database:</span>
+                        <span class="font-semibold text-slate-800">SQLite (Prototype)</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span class="text-slate-500">Security Hashing:</span>
+                        <span class="font-semibold text-slate-800">SHA-256 Hashing</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Datasets Card -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center space-x-2">
+                    <span>📁</span>
+                    <span>Specialized Datasets</span>
+                </h4>
+                <div class="space-y-3 text-xs text-slate-600">
+                    <div>
+                        <strong class="text-slate-800">AI City Challenge Track-5:</strong>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Used for fine-tuning helmet violation identification models under diverse traffic density and lighting.</p>
+                    </div>
+                    <div>
+                        <strong class="text-slate-800">Indian Licence Plate Dataset:</strong>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Fine-tuned YOLOv8n plate detector specialized in standard and custom Indian vehicle registration plate formats.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Table Card -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center space-x-2">
+                    <span>⚖️</span>
+                    <span>Traditional vs Proposed</span>
+                </h4>
+                <div class="text-xs space-y-2">
+                    <div class="p-2 rounded bg-red-50 text-red-900">
+                        <strong>Manual CCTV Monitoring:</strong> High operator fatigue, poor scalability, delayed vehicle registration lookup.
+                    </div>
+                    <div class="p-2 rounded bg-emerald-50 text-emerald-900">
+                        <strong>Proposed AI + Human:</strong> Automatic multi-violation detection, temporal false positive filtering, 1-click review portal.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scope, Limitations & Roadmap Accordion / Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Prototype Limitations -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+                <h4 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                    <span>⚠️</span>
+                    <span>Current Prototype Bounds & Limitations</span>
+                </h4>
+                <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside leading-relaxed">
+                    <li>Camera position and lighting dependency (glare, extreme nighttime shadow).</li>
+                    <li>Vehicle occlusion during heavy rush-hour traffic congestion.</li>
+                    <li>License plate OCR ambiguity caused by dirty, damaged, or severely tilted plates.</li>
+                    <li>Geometric zone calibration required for new camera installation angles.</li>
+                </ul>
+            </div>
+
+            <!-- Strategic Roadmap -->
+            <div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 space-y-2">
+                <h4 class="text-sm font-bold text-indigo-950 flex items-center space-x-2">
+                    <span>🚀</span>
+                    <span>Future Expansion Roadmap</span>
+                </h4>
+                <ul class="text-xs text-indigo-900 space-y-1.5 list-disc list-inside leading-relaxed">
+                    <li>Expanded violations: Seatbelt compliance, mobile phone usage, illegal parking.</li>
+                    <li>Edge device optimization with GPU acceleration (NVIDIA Jetson / TensorRT).</li>
+                    <li>Automated retraining loop: Human rejection cases fed back to dataset pipeline.</li>
+                    <li>Government transport database integration via secure REST endpoints.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 mt-12 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2">
+        <div class="flex justify-center items-center space-x-2 text-slate-200 font-bold">
+            <span>🚦</span>
+            <span>AI-Powered Intelligent Traffic Violation Detection & Enforcement System</span>
+        </div>
+        <p class="text-slate-500">A Human-in-the-Loop Computer Vision & Edge AI Architecture Demonstration</p>
+        <p class="text-slate-600 text-[10px]">YOLOv8 • ByteTrack • PaddleOCR • FastAPI • SHA-256 Security</p>
+    </div>
+</footer>
+
+<!-- JavaScript Logic -->
+<script>
+    // --- PIPELINE DATA & INTERACTIVE NODE INSPECTOR ---
+    const pipelineData = [
+        {
+            step: 1,
+            title: "Camera Feed",
+            icon: "📹",
+            subtitle: "Video Acquisition",
+            tech: "OpenCV Stream Reader",
+            desc: "Captures real-time or recorded camera video frames from intersection points for continuous pipeline evaluation.",
+            payload: "RGB Video Stream (1080p @ 30 FPS)"
+        },
+        {
+            step: 2,
+            title: "Object Detection",
+            icon: "🔍",
+            subtitle: "YOLOv8n Inference",
+            tech: "YOLOv8n Core Model",
+            desc: "Scans frames in real-time to detect vehicles, pedestrians, two-wheelers, and traffic signals with minimal latency.",
+            payload: "Bounding Box Coordinates, Class Confidence Scores"
+        },
+        {
+            step: 3,
+            title: "Multi-Object Tracking",
+            icon: "🎯",
+            subtitle: "ByteTrack Associator",
+            tech: "ByteTrack Algorithm",
+            desc: "Assigns persistent unique Track IDs across consecutive frames, enabling motion vector and trajectory calculation.",
+            payload: "Vehicle Track ID, Trajectory History Array"
+        },
+        {
+            step: 4,
+            title: "Violation Engine",
+            icon: "🚨",
+            subtitle: "Rule & Vision Engine",
+            tech: "Helmet Model + Geometric Rules",
+            desc: "Evaluates tracked objects against rules (No Helmet, Red Light, Wrong-Way, Triple Riding). Flags potential candidates.",
+            payload: "Candidate Violation Event Object"
+        },
+        {
+            step: 5,
+            title: "Temporal Validation",
+            icon: "⏱️",
+            subtitle: "Persistence Filter",
+            tech: "N-Frame Window Inspector",
+            desc: "Requires candidate violations to persist across multiple consecutive frames before triggering confirmation, filtering false positives.",
+            payload: "Validated Violation Flag (Verified = True)"
+        },
+        {
+            step: 6,
+            title: "ANPR & PaddleOCR",
+            icon: "🔤",
+            subtitle: "Event-Driven ANPR",
+            tech: "YOLOv8 License Plate + PaddleOCR",
+            desc: "Triggered ONLY upon confirmed violations. Localizes vehicle plate ROI and extracts alphanumeric registration text.",
+            payload: "Extracted Registration Text e.g., MH12AB1234"
+        },
+        {
+            step: 7,
+            title: "Evidence Generation",
+            icon: "🔐",
+            subtitle: "Tamper Security",
+            tech: "SHA-256 Hashing Engine",
+            desc: "Bundles cropped snapshot, 5-second video clip, timestamp, metadata, and generates SHA-256 cryptographic hash.",
+            payload: "Evidence Package + Digital Signature Hash"
+        },
+        {
+            step: 8,
+            title: "Backend Storage",
+            icon: "💾",
+            subtitle: "FastAPI & SQLite",
+            tech: "FastAPI REST + SQLite DB",
+            desc: "Persists violation metadata, file paths, and review status in local database. Exposes API endpoints for enforcement portal.",
+            payload: "Database Record Entry (Status: Pending)"
+        },
+        {
+            step: 9,
+            title: "Human Review",
+            icon: "👨‍💻",
+            subtitle: "Human-in-the-Loop",
+            tech: "Web Review Dashboard",
+            desc: "Authorized reviewer inspects evidence and issues definitive 'Approve' (Challan Issued) or 'Reject' decision.",
+            payload: "Final Enforcement Action Record"
+        }
+    ];
+
+    function renderPipelineNodes() {
+        const container = document.getElementById('pipeline-nodes');
+        container.innerHTML = pipelineData.map(item => `
+            <button onclick="selectPipelineStep(${item.step})" id="step-btn-${item.step}"
+                class="flex flex-col items-center p-3 rounded-xl border text-center transition ${item.step === 1 ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300'}">
+                <span class="text-xl mb-1">${item.icon}</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider opacity-75">Step 0${item.step}</span>
+                <span class="text-xs font-semibold leading-tight mt-0.5">${item.title}</span>
+            </button>
+        `).join('');
+    }
+
+    function selectPipelineStep(stepNum) {
+        const item = pipelineData.find(d => d.step === stepNum);
+        if(!item) return;
+
+        // Update button active styles
+        pipelineData.forEach(d => {
+            const btn = document.getElementById(`step-btn-${d.step}`);
+            if(d.step === stepNum) {
+                btn.className = "flex flex-col items-center p-3 rounded-xl border text-center transition bg-indigo-600 text-white border-indigo-600 shadow-md";
+            } else {
+                btn.className = "flex flex-col items-center p-3 rounded-xl border text-center transition bg-white text-slate-700 border-slate-200 hover:border-indigo-300";
+            }
+        });
+
+        // Update Detail Card
+        const card = document.getElementById('step-detail-card');
+        card.innerHTML = `
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-3 gap-2">
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl bg-indigo-50 p-2 rounded-xl text-indigo-600">${item.icon}</span>
+                    <div>
+                        <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Pipeline Stage 0${item.step}</div>
+                        <h4 class="text-lg font-bold text-slate-900">${item.title} (${item.subtitle})</h4>
+                    </div>
+                </div>
+                <span class="text-xs font-mono bg-slate-100 px-3 py-1 rounded-full text-slate-700 border border-slate-200">Tech: ${item.tech}</span>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <strong class="text-slate-800">Operation Overview:</strong>
+                    <p class="text-slate-600 mt-1 leading-relaxed">${item.desc}</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <strong class="text-slate-800">Generated Data Payload:</strong>
+                    <p class="font-mono text-indigo-700 mt-1 text-[11px]">${item.payload}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- TEMPORAL VALIDATION SIMULATOR ---
+    function simulateTemporalValidation(isSustained) {
+        const f1 = document.getElementById('sim-frame-1');
+        const f2 = document.getElementById('sim-frame-2');
+        const f3 = document.getElementById('sim-frame-3');
+        const banner = document.getElementById('sim-banner');
+
+        if(isSustained) {
+            f1.className = "text-sm font-bold text-amber-400";
+            f1.innerText = "⚠️ Candidate Detected";
+
+            setTimeout(() => {
+                f2.className = "text-sm font-bold text-amber-400";
+                f2.innerText = "⚠️ Persistence Verified";
+            }, 300);
+
+            setTimeout(() => {
+                f3.className = "text-sm font-bold text-emerald-400";
+                f3.innerText = "✅ Violation Confirmed!";
+                banner.className = "p-3 rounded-lg bg-emerald-950 text-emerald-200 border border-emerald-800 flex items-center justify-between text-xs";
+                banner.innerHTML = `<span><strong>Result:</strong> Sustained violation detected across 3 frames. Triggering ANPR & PaddleOCR pipeline!</span><span class="font-mono text-[10px] bg-emerald-900 px-2 py-0.5 rounded text-emerald-300">ANPR Triggered</span>`;
+            }, 600);
+        } else {
+            f1.className = "text-sm font-bold text-amber-400";
+            f1.innerText = "⚠️ Transient Noise";
+
+            setTimeout(() => {
+                f2.className = "text-sm font-bold text-red-400";
+                f2.innerText = "❌ Lost in Frame 2";
+            }, 300);
+
+            setTimeout(() => {
+                f3.className = "text-sm font-bold text-slate-500";
+                f3.innerText = "🚫 Ignored (False Positive)";
+                banner.className = "p-3 rounded-lg bg-red-950 text-red-200 border border-red-800 flex items-center justify-between text-xs";
+                banner.innerHTML = `<span><strong>Result:</strong> Detection dropped on frame 2. Temporal validation successfully filtered out false positive!</span><span class="font-mono text-[10px] bg-red-900 px-2 py-0.5 rounded text-red-300">ANPR Skipped</span>`;
+            }, 600);
+        }
+    }
+
+    // --- EFFICIENCY CHART & SIMULATOR ---
+    let efficiencyChartInstance = null;
+
+    function initEfficiencyChart() {
+        const ctx = document.getElementById('efficiencyChart').getContext('2d');
+        efficiencyChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Low Density (15 v/m)', 'Medium Density (40 v/m)', 'Heavy Junction (100 v/m)'],
+                datasets: [
+                    {
+                        label: 'Continuous ANPR/OCR (Ops/Min)',
+                        data: [900, 2400, 6000],
+                        backgroundColor: '#EF4444'
+                    },
+                    {
+                        label: 'Proposed Event-Driven OCR (Ops/Min)',
+                        data: [45, 120, 300],
+                        backgroundColor: '#10B981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' inferences';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'OCR Inferences Per Min', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateEfficiencyChart(val) {
+        const vehicles = parseInt(val);
+        document.getElementById('traffic-density-label').innerText = `${vehicles} Vehicles/min`;
+
+        // Calculated ops: 60 frames/sec * vehicles... continuous runs OCR every vehicle box across frames (~60 ops per vehicle)
+        const continuousOps = vehicles * 60;
+        // Event-driven runs OCR only once upon violation confirmation (assuming ~5% violation rate)
+        const eventOps = Math.round(vehicles * 0.05 * 60);
+        const savings = (((continuousOps - eventOps) / continuousOps) * 100).toFixed(1);
+
+        document.getElementById('continuous-ops').innerText = `${continuousOps.toLocaleString()} ops/min`;
+        document.getElementById('event-ops').innerText = `${eventOps.toLocaleString()} ops/min`;
+        document.getElementById('savings-pct').innerText = `${savings}% Compute Saved`;
+    }
+
+    // --- MOCK REVIEW DASHBOARD CASES DATA ---
+    const reviewCases = [
+        {
+            id: 1015,
+            time: "09:27 AM",
+            location: "City Junction 3",
+            violation: "Triple Riding",
+            plate: "MH14GH3456",
+            blacklisted: false,
+            hash: "3f7c2a6e9b2d9e4c44e7f8ac6b9d3e8f7a9c1b2d4e6f7a8b1c2d3e4f5a6b7c8d",
+            status: "Pending",
+            video: "clip_1015_tripleride.mp4",
+            visualType: "motorcycle_3p"
+        },
+        {
+            id: 1014,
+            time: "09:22 AM",
+            location: "East Corridor Ring Road",
+            violation: "Wrong-Way Driving",
+            plate: "UP32EF9012",
+            blacklisted: true,
+            hash: "8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b",
+            status: "Pending",
+            video: "clip_1014_wrongway.mp4",
+            visualType: "car_wrongway"
+        },
+        {
+            id: 1013,
+            time: "09:18 AM",
+            location: "Main Signal Blvd",
+            violation: "Red Light Jumping",
+            plate: "KA05CD5678",
+            blacklisted: false,
+            hash: "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+            status: "Pending",
+            video: "clip_1013_redlight.mp4",
+            visualType: "car_redlight"
+        },
+        {
+            id: 1012,
+            time: "09:15 AM",
+            location: "University Flyover",
+            violation: "No Helmet",
+            plate: "MH12AB1234",
+            blacklisted: true,
+            hash: "7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
+            status: "Pending",
+            video: "clip_1012_nohelmet.mp4",
+            visualType: "motorcycle_nohelmet"
+        }
+    ];
+
+    let selectedCaseId = 1015;
+
+    function renderQueue() {
+        const container = document.getElementById('case-queue-container');
+        container.innerHTML = reviewCases.map(c => `
+            <div onclick="selectCase(${c.id})" class="p-3 rounded-xl border text-left cursor-pointer transition ${c.id === selectedCaseId ? 'bg-indigo-900/60 border-indigo-500 text-white' : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'}">
+                <div class="flex justify-between items-center">
+                    <span class="font-mono text-xs font-bold text-indigo-300">Case #${c.id}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded font-semibold ${c.status === 'Approved' ? 'bg-emerald-900/80 text-emerald-300' : c.status === 'Rejected' ? 'bg-red-900/80 text-red-300' : 'bg-amber-900/80 text-amber-300'}">${c.status}</span>
+                </div>
+                <div class="text-xs font-bold text-white mt-1">${c.violation}</div>
+                <div class="flex justify-between items-center text-[10px] text-slate-400 mt-1">
+                    <span>${c.plate}</span>
+                    <span>${c.time}</span>
+                </div>
+            </div>
+        `).join('');
+
+        const pendingCount = reviewCases.filter(c => c.status === 'Pending').length;
+        document.getElementById('case-count').innerText = `${pendingCount} Pending`;
+    }
+
+    function selectCase(id) {
+        selectedCaseId = id;
+        renderQueue();
+        const c = reviewCases.find(item => item.id === id);
+        if(!c) return;
+
+        document.getElementById('detail-case-id').innerText = `Case #${c.id}`;
+        document.getElementById('detail-violation-badge').innerText = c.violation;
+        document.getElementById('detail-time').innerText = c.time;
+        document.getElementById('detail-location').innerText = c.location;
+        document.getElementById('detail-plate-number').innerText = c.plate;
+        document.getElementById('detail-hash').innerText = c.hash;
+        document.getElementById('video-filename').innerText = c.video;
+
+        // Blacklist Render
+        const blCard = document.getElementById('detail-blacklist-card');
+        if(c.blacklisted) {
+            blCard.className = "bg-red-950/80 border border-red-800 px-3 py-2 rounded-lg flex items-center space-x-2 text-xs text-red-200";
+            blCard.innerHTML = `<span>⚠️</span><div><strong class="block leading-tight">Blacklist Match!</strong><span class="text-[10px] text-red-300">Vehicle flagged in database</span></div>`;
+        } else {
+            blCard.className = "bg-slate-800 border border-slate-700 px-3 py-2 rounded-lg flex items-center space-x-2 text-xs text-slate-300";
+            blCard.innerHTML = `<span>✅</span><div><strong class="block leading-tight">Clear Record</strong><span class="text-[10px] text-slate-400">No stolen/wanted flags</span></div>`;
+        }
+
+        // Render Graphical Box Representation
+        const box = document.getElementById('snapshot-canvas-box');
+        box.innerHTML = `
+            <div class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-2 text-center">
+                <div class="text-3xl mb-1">${c.visualType.includes('motorcycle') ? '🏍️' : '🚗'}</div>
+                <div class="text-xs font-mono font-bold text-amber-400 border border-amber-500/50 bg-amber-950/40 px-2 py-0.5 rounded">
+                    Bounding Box: [YOLOv8 Class: ${c.violation}]
+                </div>
+                <div class="text-[10px] text-slate-400 mt-2">
+                    Simulated frame snapshot (${c.location})
+                </div>
+            </div>
+        `;
+
+        document.getElementById('hash-status-msg').innerText = "SHA-256 matches stored backend payload signature.";
+        document.getElementById('hash-status-msg').className = "text-[10px] text-slate-500 italic";
+    }
+
+    function recordDecision(decision) {
+        const c = reviewCases.find(item => item.id === selectedCaseId);
+        if(!c) return;
+
+        c.status = decision;
+        renderQueue();
+
+        const msg = decision === 'Approved' ? `Case #${c.id} APPROVED! Digital challan queued for plate ${c.plate}.` : `Case #${c.id} REJECTED! Reason recorded.`;
+        alert(msg);
+    }
+
+    function verifyHashIntegrity() {
+        const msg = document.getElementById('hash-status-msg');
+        msg.innerText = "🔒 SHA-256 Hash Verified: Cryptographic integrity confirmed. Evidence unmodified.";
+        msg.className = "text-[10px] text-emerald-400 font-semibold";
+    }
+
+    function playSimulatedVideo() {
+        alert(`Simulating 5-second evidence video clip playback for case #${selectedCaseId}...`);
+    }
+
+    function scrollToSection(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    // --- INITIALIZATION ON LOAD ---
+    window.addEventListener('DOMContentLoaded', () => {
+        renderPipelineNodes();
+        selectPipelineStep(1);
+        initEfficiencyChart();
+        renderQueue();
+        selectCase(1015);
+    });
+</script>
+</body>
+</html>
